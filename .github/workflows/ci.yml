@@ -53,6 +53,47 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Test: check injected variables"
+        run: |
+          # Check all required variables are set
+          missing=""
+          [ -z "$YONTRACK_BUILD_ID" ] && missing="${missing} YONTRACK_BUILD_ID"
+          [ -z "$YONTRACK_BUILD_NAME" ] && missing="${missing} YONTRACK_BUILD_NAME"
+          [ -z "$YONTRACK_BRANCH_ID" ] && missing="${missing} YONTRACK_BRANCH_ID"
+          [ -z "$YONTRACK_BRANCH_NAME" ] && missing="${missing} YONTRACK_BRANCH_NAME"
+          [ -z "$YONTRACK_PROJECT_ID" ] && missing="${missing} YONTRACK_PROJECT_ID"
+          [ -z "$YONTRACK_PROJECT_NAME" ] && missing="${missing} YONTRACK_PROJECT_NAME"
+          
+          if [ -n "$missing" ]; then
+            echo "Error: The following variables are not set or empty:$missing"
+            exit 1
+          fi
+          
+          echo "All required variables are set"
+          
+          # Validate YONTRACK_BRANCH_NAME equals Git branch name with / replaced by -
+          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+          EXPECTED_BRANCH_NAME="${CURRENT_BRANCH//\//-}"
+          
+          if [ "$YONTRACK_BRANCH_NAME" != "$EXPECTED_BRANCH_NAME" ]; then
+            echo "Error: YONTRACK_BRANCH_NAME='$YONTRACK_BRANCH_NAME' does not match expected '$EXPECTED_BRANCH_NAME'"
+            exit 1
+          fi
+          
+          echo "YONTRACK_BRANCH_NAME matches Git branch name: $YONTRACK_BRANCH_NAME"
+          
+          # Validate YONTRACK_PROJECT_NAME equals repository name
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          
+          if [ "$YONTRACK_PROJECT_NAME" != "$REPO_NAME" ]; then
+            echo "Error: YONTRACK_PROJECT_NAME='$YONTRACK_PROJECT_NAME' does not match repository name '$REPO_NAME'"
+            exit 1
+          fi
+          
+          echo "YONTRACK_PROJECT_NAME matches repository name: $YONTRACK_PROJECT_NAME"
+          
+          echo "All validations passed successfully!"
+
       - name: Commit and push built files
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
