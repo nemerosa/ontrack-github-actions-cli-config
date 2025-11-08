@@ -125,5 +125,4 @@ jobs:
       - name: Tagging the Yontrack build
         if: ${{ github.ref == 'refs/heads/main' && steps.npm-publish.outputs.version != '' }}
         run: |
-          echo "Published version: ${{ steps.npm-publish.outputs.version }}"
-          # Use the version for whatever you need
+          yontrack build set-property release ${{ steps.npm-publish.outputs.version }}
