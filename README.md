@@ -4,6 +4,109 @@ GitHub action to install and configure the [Yontrack CLI](https://github.com/nem
 by the configuration of the build, branch & project in Yontrack, using
 a local configuration file.
 
+## Usage
+
+### Setting up the action
+
+Example:
+
+```yaml
+  - name: "Yontrack configuration"
+    id: yontrack-config
+    uses: nemerosa/ontrack-github-actions-cli-config@main
+    env:
+      YONTRACK_URL: ${{ vars.YONTRACK_URL }}
+      YONTRACK_TOKEN: ${{ secrets.YONTRACK_TOKEN }}
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+This step performs the following actions:
+
+1. Installs the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli) using the latest available version (using the `github-token` to get access to the list of releases)
+2. Sets the `yontrack` CLI on the path for the subsequent steps
+3. Configures the CLI based on the `YONTRACK_URL` and `YONTRACK_TOKEN` environment variables
+4. Sends the default `.yontrack/ci.yml` to Yontrack, associated with some environment
+  variables, to configure the build, branch and project.
+5. Sets some environment variables to be used by the following steps. In particular, all
+  Yontrack CLI commands will reuse these environment variables for the `--build`, 
+  `--branch` and `--project` parameters.
+
+> It may be better to not use the latest available version of the CLI, but to use a specific version: remove `github-token` and set the `version` parameter to a known version of the CLI.
+
+### Configuration file
+
+The configuration file is a YAML file expected at `.yontrack/ci.yml`.
+
+> You can change the path of this file using the `config` input.
+
+See the Yontrack documentation for the format of this file.
+
+Below are some basic examples of configuration files.
+
+#### Simplest configuration
+
+This configuration will tell Yontrack to setup the build, branch and project using default values.
+
+```yaml
+version: v1
+configuration: {}
+```
+
+#### Setting some simple validations and an auto promotion
+
+```yaml
+version: v1
+configuration:
+  defaults:
+    branch:
+      validations:
+        BUILD: {}
+        TEST: {}
+      promotions:
+        BRONZE:
+          validations:
+            - BUILD
+            - TEST
+```
+
+#### Adding a specific promotion for the main branch 
+
+```yaml
+version: v1
+configuration:
+  defaults:
+    branch:
+      validations:
+        BUILD: {}
+        TEST: {}
+      promotions:
+        BRONZE:
+          validations:
+            - BUILD
+            - TEST
+  custom:
+    - conditions:
+        branch: main
+      branch:
+        validations:
+          RELEASE: {}
+        promotions:
+          SILVER:
+            validations:
+              - RELEASE
+```
+
+### Environment variables
+
+The following environment variables are set by this action:
+
+* `YONTRACK_BUILD_ID`
+* `YONTRACK_BUILD_NAME`
+* `YONTRACK_BRANCH_ID`
+* `YONTRACK_BRANCH_NAME`
+* `YONTRACK_PROJECT_ID`
+* `YONTRACK_PROJECT_NAME`
+
 ## Inputs
 
 ### Yontrack CI configuration
@@ -47,20 +150,3 @@ Optional value to override max wait time between connection retry attempts. If n
 ### `installed`
 
 Version which has actually been installed.
-
-## Example usage
-
-Setting the CLI automatically:
-
-```yaml
-- name: Setup the CLI
-  uses: nemerosa/ontrack-github-actions-cli-install
-  with:
-    github-token: ${{ github.token }}
-    url: <ontrack-url>
-    token: ${{ secrets.ONTRACK_TOKEN }}
-# This:
-# 1. installs the CLI
-# 2. configures the CLI
-# After this step, the `yontrack` command is available in the PATH.
-```
