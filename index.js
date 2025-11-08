@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const client = require('@nemerosa/ontrack-github-actions-module-install');
 
 (async () => {
