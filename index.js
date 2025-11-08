@@ -46,6 +46,7 @@ async function setup() {
     // Building the command line arguments
 
     const args = []
+    args.push('ci', 'config')
     args.push('--file', path)
     args.push('--ci', 'github')
     args.push('--scm', 'github')
