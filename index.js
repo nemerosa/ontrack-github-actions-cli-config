@@ -77,10 +77,29 @@ async function setup() {
     const json = JSON.parse(output);
     core.info(`Config output: ${JSON.stringify(json, null, 2)}`);
 
-    // TODO Gets the outcome and injects it into the environment
-    
-    // You can now use:
-    // result.stdout - standard output as string
-    // result.stderr - standard error as string
-    // result.exitCode - exit code of the command
+    // Gets the outcome and injects it into the environment
+
+    const buildId = json.ID;
+    const buildName = json.Name;
+    const branchId = json.Branch.ID;
+    const branchName = json.Branch.Name;
+    const projectId = json.Branch.Project.ID;
+    const projectName = json.Branch.Project.Name;
+
+    core.exportVariable('YONTRACK_BUILD_ID', buildId);
+    core.exportVariable('YONTRACK_BUILD_NAME', buildName);
+    core.exportVariable('YONTRACK_BRANCH_ID', branchId);
+    core.exportVariable('YONTRACK_BRANCH_NAME', branchName);
+    core.exportVariable('YONTRACK_PROJECT_ID', projectId);
+    core.exportVariable('YONTRACK_PROJECT_NAME', projectName);
+
+    // Injects also these values as action outputs
+
+    core.setOutput('buildId', buildId);
+    core.setOutput('buildName', buildName);
+    core.setOutput('branchId', branchId);
+    core.setOutput('branchName', branchName);
+    core.setOutput('projectId', projectId);
+    core.setOutput('projectName', projectName);
+
 }

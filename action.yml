@@ -43,6 +43,18 @@ inputs:
 outputs:
   installed:
     description: Version which was actually installed
+  buildId:
+    description: ID of the build created in Yontrack
+  buildName:
+    description: Name of the build created in Yontrack
+  branchId:
+    description: ID of the branch created in Yontrack
+  branchName:
+    description: Name of the branch created in Yontrack
+  projectId:
+    description: ID of the project created in Yontrack
+  projectName:
+    description: Name of the project created in Yontrack
 runs:
   using: node20
   main: dist/index.js
