@@ -67,7 +67,7 @@ async function setup() {
     ]
 
     for (const envName of envNames) {
-        args.push('--env', process.env[envName])
+        args.push('--env', `${envName}=${process.env[envName]}`)
     }
 
     // Running the configuration
