@@ -1,2 +1,12 @@
 version: v1
-configuration: {}
+configuration:
+  defaults:
+    branch:
+      validations:
+        BUILD: {}
+        TEST: {}
+      promotions:
+        BRONZE:
+          validations:
+            - BUILD
+            - TEST

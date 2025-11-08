@@ -94,6 +94,11 @@ jobs:
           
           echo "All validations passed successfully!"
 
+      - name: "Test: validations and promotions"
+        run: |
+          yontrack validate --validation BUILD --status PASSED
+          yontrack validate --validation TEST --status PASSED          
+
       - name: Commit and push built files
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
