@@ -1,0 +1,43 @@
+name: Yontrack CLI Config
+description: |
+  GitHub action to install and configure the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli), followed
+  by the configuration of the build, branch & project in Yontrack, using
+  a local configuration file.
+inputs:
+  config:
+    description: Path to the configuration file
+    required: false
+    default: '.yontrack/ci.yml'
+  version:
+    description: Version of the Ontrack CLI to setup (defaults to the latest)
+    required: false
+    default: ''
+  github-token:
+    description: >-
+      GitHub token to use to get the latest version of the CLI (when version is
+      not provided)
+    required: false
+  url:
+    description: URL of the Yontrack instance to target. Defaults to the `YONTRACK_URL` environment variable.
+    required: false
+    default: ''
+  token:
+    description: >-
+      Authentication token to use to connect to Yontrack (required if URL is
+      set). DEFAULTS to the `YONTRACK_TOKEN` environment variable.
+    required: false
+    default: ''
+  conn-retry-count:
+    description: Max connection retry attempts for each call to Yontrack
+    required: false
+    default: ''
+  conn-retry-wait:
+    description: Max connection retry wait time between attempts in seconds
+    required: false
+    default: ''
+outputs:
+  installed:
+    description: Version which was actually installed
+runs:
+  using: node20
+  main: dist/index.js
