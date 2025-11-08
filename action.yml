@@ -1,13 +1,16 @@
 name: Yontrack CLI Config
-description: |
-  GitHub action to install and configure the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli), followed
+description: >
+  GitHub action to install and configure the [Yontrack
+  CLI](https://github.com/nemerosa/ontrack-cli), followed
+
   by the configuration of the build, branch & project in Yontrack, using
+
   a local configuration file.
 inputs:
   config:
     description: Path to the configuration file
     required: false
-    default: '.yontrack/ci.yml'
+    default: .yontrack/ci.yml
   version:
     description: Version of the Ontrack CLI to setup (defaults to the latest)
     required: false
@@ -18,7 +21,9 @@ inputs:
       not provided)
     required: false
   url:
-    description: URL of the Yontrack instance to target. Defaults to the `YONTRACK_URL` environment variable.
+    description: >-
+      URL of the Yontrack instance to target. Defaults to the `YONTRACK_URL`
+      environment variable.
     required: false
     default: ''
   token:
