@@ -50,7 +50,7 @@ async function setup() {
     args.push('--file', path)
     args.push('--ci', 'github')
     args.push('--scm', 'github')
-    args.push('--output', 'env')
+    args.push('--output', 'json')
 
     // List of environment variables to inject
 
@@ -72,7 +72,15 @@ async function setup() {
 
     // Running the configuration
 
-    await exec.exec(cliExecutable, args)
+    const result = await exec.getExecOutput(cliExecutable, args)
+    const output = result.stdout;
+    const json = JSON.parse(output);
+    core.info(`Config output: ${JSON.stringify(json, null, 2)}`);
 
     // TODO Gets the outcome and injects it into the environment
+    
+    // You can now use:
+    // result.stdout - standard output as string
+    // result.stderr - standard error as string
+    // result.exitCode - exit code of the command
 }
