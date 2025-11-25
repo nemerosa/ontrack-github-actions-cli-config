@@ -48,8 +48,8 @@ jobs:
         id: test-config
         uses: ./
         env:
-          YONTRACK_URL: ${{ vars.YONTRACK_URL }}
-          YONTRACK_TOKEN: ${{ secrets.YONTRACK_TOKEN }}
+          YONTRACK_URL: ${{ vars.ONTRACK_URL }}
+          YONTRACK_TOKEN: ${{ secrets.ONTRACK_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
