@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.2...v1.0.3) (2025-11-25)
+
+
+### Bug Fixes
+
+* using `.yontrack/ci.yaml`, not `.yontrack/ci.yml` ([10c687d](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/10c687d5e938fc83bc006121a7f9fbb7711d5ce7))
+* using `.yontrack/ci.yaml`, not `.yontrack/ci.yml` ([488836a](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/488836a74308de66979d90ba6550f2d03cffbd39))
+
 ## [1.0.2](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.1...v1.0.2) (2025-11-08)
 
 ## [1.0.1](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.0...v1.0.1) (2025-11-08)
