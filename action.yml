@@ -10,7 +10,7 @@ inputs:
   config:
     description: Path to the configuration file
     required: false
-    default: .yontrack/ci.yml
+    default: .yontrack/ci.yaml
   version:
     description: Version of the Ontrack CLI to setup (defaults to the latest)
     required: false
