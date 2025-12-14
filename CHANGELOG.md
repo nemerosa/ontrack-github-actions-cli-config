@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.3...v1.1.0) (2025-12-14)
+
+
+### Features
+
+* pushing the VERSION environment variable when available ([85363e2](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/85363e2726f9921e441d4c408e7ef4f25b78128f))
+
 ## [1.0.3](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.2...v1.0.3) (2025-11-25)
 
 
