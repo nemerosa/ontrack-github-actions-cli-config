@@ -115,6 +115,18 @@ The following environment variables are set by this action:
 
 Path to the local configuration file to use. Defaults to `.yontrack.ci.yml`.
 
+#### `env-vars`
+
+List of environment variable names (one per line), to pass additionally to the default ones.
+
+Example:
+
+```yaml
+env-vars: |
+  APP_VERSION
+  SOME_VAR
+```
+
 ### Yontrack CLI configuration
 
 #### `version`

@@ -40,6 +40,10 @@ inputs:
     description: Max connection retry wait time between attempts in seconds
     required: false
     default: ''
+  env-vars:
+    description: List of environment variable names (one per line)
+    required: false
+    default: ''
 outputs:
   installed:
     description: Version which was actually installed

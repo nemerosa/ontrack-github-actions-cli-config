@@ -67,6 +67,16 @@ async function setup() {
         'VERSION',
     ]
 
+    // Adding custom environment variables
+
+    const envVarNames = core
+        .getMultilineInput('env-vars', { trimWhitespace: true })
+        .filter(Boolean)
+
+    envNames.push(...envVarNames)
+
+    // Collecting the environment variables
+
     for (const envName of envNames) {
         const envValue = process.env[envName]
         if (envValue) {
