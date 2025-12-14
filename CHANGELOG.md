@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.1.0...v1.2.0) (2025-12-14)
+
+
+### Features
+
+* `env-vars` list of additional environment variables to pass ([8ba31d1](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/8ba31d1bf371663b9abf6f2b7f8e308d1be1cc1e))
+
 # [1.1.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.0.3...v1.1.0) (2025-12-14)
 
 
