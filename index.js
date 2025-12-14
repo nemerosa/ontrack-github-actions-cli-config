@@ -64,10 +64,14 @@ async function setup() {
         'GITHUB_EVENT_NAME',
         'GITHUB_ACTIONS',
         'GITHUB_SHA',
+        'VERSION',
     ]
 
     for (const envName of envNames) {
-        args.push('--env', `${envName}=${process.env[envName]}`)
+        const envValue = process.env[envName]
+        if (envValue) {
+            args.push('--env', `${envName}=${envValue}`)
+        }
     }
 
     // Running the configuration
