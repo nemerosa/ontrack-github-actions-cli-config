@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.2.0...v1.3.0) (2026-03-10)
+
+
+### Features
+
+* nemerosa/ontrack[#1560](https://github.com/nemerosa/ontrack-github-actions-cli-config/issues/1560) Injecting some YONTRACK environment variables ([d9fc93c](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/d9fc93c0b394c940f239f324fe66205df8d80fb7))
+
 # [1.2.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.1.0...v1.2.0) (2025-12-14)
 
 
