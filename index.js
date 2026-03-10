@@ -65,6 +65,8 @@ async function setup() {
         'GITHUB_ACTIONS',
         'GITHUB_SHA',
         'VERSION',
+        // Legacy (Y)Ontrack environment variables
+        'ONTRACK_SCM_ISSUES',
     ]
 
     // Adding custom environment variables
@@ -74,6 +76,13 @@ async function setup() {
         .filter(Boolean)
 
     envNames.push(...envVarNames)
+
+    // Adding all environment variables starting with YONTRACK_CI_
+
+    const yontrackCiVars = Object.keys(process.env)
+        .filter(key => key.startsWith('YONTRACK_CI_'))
+
+    envNames.push(...yontrackCiVars)
 
     // Collecting the environment variables
 
