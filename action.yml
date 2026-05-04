@@ -60,5 +60,5 @@ outputs:
   projectName:
     description: Name of the project created in Yontrack
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
