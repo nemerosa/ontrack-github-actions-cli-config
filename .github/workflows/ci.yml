@@ -18,16 +18,15 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20.x
+          node-version: 24.x
           registry-url: 'https://npm.pkg.github.com'
           scope: '@nemerosa'
 
@@ -35,16 +34,16 @@ jobs:
         id: npm-ci
         run: npm ci
         env:
-          # See https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Building and running tests
-        id: npm-build
-        run: npm run build && npm test
+      - run: npm run lint
 
-        # Testing the action
+      - run: npm run build
+
+      - run: npm test
 
       - name: "Test: configuration"
+        if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
         id: test-config
         uses: ./
         env:
@@ -54,8 +53,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Test: check injected variables"
+        if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
         run: |
-          # Check all required variables are set
           missing=""
           [ -z "$YONTRACK_BUILD_ID" ] && missing="${missing} YONTRACK_BUILD_ID"
           [ -z "$YONTRACK_BUILD_NAME" ] && missing="${missing} YONTRACK_BUILD_NAME"
@@ -63,66 +62,52 @@ jobs:
           [ -z "$YONTRACK_BRANCH_NAME" ] && missing="${missing} YONTRACK_BRANCH_NAME"
           [ -z "$YONTRACK_PROJECT_ID" ] && missing="${missing} YONTRACK_PROJECT_ID"
           [ -z "$YONTRACK_PROJECT_NAME" ] && missing="${missing} YONTRACK_PROJECT_NAME"
-          
           if [ -n "$missing" ]; then
             echo "Error: The following variables are not set or empty:$missing"
             exit 1
           fi
-          
           echo "All required variables are set"
-          
-          # Validate YONTRACK_BRANCH_NAME equals Git branch name with / replaced by -
           CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
           EXPECTED_BRANCH_NAME="${CURRENT_BRANCH//\//-}"
-          
           if [ "$YONTRACK_BRANCH_NAME" != "$EXPECTED_BRANCH_NAME" ]; then
             echo "Error: YONTRACK_BRANCH_NAME='$YONTRACK_BRANCH_NAME' does not match expected '$EXPECTED_BRANCH_NAME'"
             exit 1
           fi
-          
-          echo "YONTRACK_BRANCH_NAME matches Git branch name: $YONTRACK_BRANCH_NAME"
-          
-          # Validate YONTRACK_PROJECT_NAME equals repository name
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          
           if [ "$YONTRACK_PROJECT_NAME" != "$REPO_NAME" ]; then
             echo "Error: YONTRACK_PROJECT_NAME='$YONTRACK_PROJECT_NAME' does not match repository name '$REPO_NAME'"
             exit 1
           fi
-          
-          echo "YONTRACK_PROJECT_NAME matches repository name: $YONTRACK_PROJECT_NAME"
-          
           echo "All validations passed successfully!"
 
       - name: "Test: validations and promotions"
+        if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
         run: |
           yontrack validate --validation BUILD --status PASSED
-          yontrack validate --validation TEST --status PASSED          
+          yontrack validate --validation TEST --status PASSED
 
-      - name: Commit and push built files
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add dist/
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update built files [skip ci]"
-            git push
-          fi
-
-      - name: Publication
-        id: npm-publish
+      - name: Semantic release
+        id: release
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           npx semantic-release
-          # Capture the version from the latest git tag created by semantic-release
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tagging the Yontrack build
-        if: ${{ github.ref == 'refs/heads/main' && steps.npm-publish.outputs.version != '' }}
+      - name: Update floating major/minor tags
+        if: ${{ github.ref == 'refs/heads/main' && steps.release.outputs.version != '' }}
         run: |
-          yontrack build set-property release ${{ steps.npm-publish.outputs.version }}
+          VERSION="${{ steps.release.outputs.version }}"
+          [[ "$VERSION" =~ ^v([0-9]+)\.([0-9]+)\.[0-9]+$ ]] || exit 0
+          MAJOR="v${BASH_REMATCH[1]}"
+          MINOR="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          git tag -f "$MAJOR" "$VERSION"
+          git tag -f "$MINOR" "$VERSION"
+          git push origin -f "$MAJOR" "$MINOR"
+
+      - name: Tagging the Yontrack build
+        if: ${{ github.ref == 'refs/heads/main' && steps.release.outputs.version != '' && vars.ONTRACK_URL != '' }}
+        run: yontrack build set-property release "${{ steps.release.outputs.version }}"
