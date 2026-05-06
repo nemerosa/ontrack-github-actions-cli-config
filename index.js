@@ -1,17 +1,6 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
 const client = require('@nemerosa/ontrack-github-actions-module-install');
 
-(async () => {
-    try {
-        await setup();
-    } catch (error) {
-        core.setFailed(error.message);
-    }
-})();
-
-async function setup() {
-
+async function runAction({ core, exec, client: clientDep }) {
     let url = core.getInput('url');
     if (!url) {
         url = process.env.YONTRACK_URL;
@@ -21,8 +10,7 @@ async function setup() {
         token = process.env.YONTRACK_TOKEN;
     }
 
-    // Installing and configuring the CLI
-    const {version, dir, cliExecutable} = await client.install({
+    const { version, dir, cliExecutable } = await clientDep.install({
         version: core.getInput('version'),
         githubToken: core.getInput('github-token'),
         acceptDraft: false,
@@ -32,27 +20,21 @@ async function setup() {
         yontrackUser: core.getInput('cli-config'),
         connRetryCount: core.getInput('conn-retry-count'),
         connRetryWait: core.getInput('conn-retry-wait'),
-    })
+    });
 
     core.setOutput('installed', version);
-    core.addPath(dir)
+    core.addPath(dir);
     core.info(`Yontrack CLI version ${version} installed`);
-
-    // Configuration
 
     const path = core.getInput('config');
     core.info(`Yontrack config at ${path}`);
 
-    // Building the command line arguments
-
-    const args = []
-    args.push('ci', 'config')
-    args.push('--file', path)
-    args.push('--ci', 'github')
-    args.push('--scm', 'github')
-    args.push('--output', 'json')
-
-    // List of environment variables to inject
+    const args = [];
+    args.push('ci', 'config');
+    args.push('--file', path);
+    args.push('--ci', 'github');
+    args.push('--scm', 'github');
+    args.push('--output', 'json');
 
     const envNames = [
         'GITHUB_SERVER_URL',
@@ -65,42 +47,31 @@ async function setup() {
         'GITHUB_ACTIONS',
         'GITHUB_SHA',
         'VERSION',
-        // Legacy (Y)Ontrack environment variables
         'ONTRACK_SCM_ISSUES',
-    ]
-
-    // Adding custom environment variables
+    ];
 
     const envVarNames = core
         .getMultilineInput('env-vars', { trimWhitespace: true })
-        .filter(Boolean)
+        .filter(Boolean);
 
-    envNames.push(...envVarNames)
-
-    // Adding all environment variables starting with YONTRACK_CI_
+    envNames.push(...envVarNames);
 
     const yontrackCiVars = Object.keys(process.env)
-        .filter(key => key.startsWith('YONTRACK_CI_'))
+        .filter((key) => key.startsWith('YONTRACK_CI_'));
 
-    envNames.push(...yontrackCiVars)
-
-    // Collecting the environment variables
+    envNames.push(...yontrackCiVars);
 
     for (const envName of envNames) {
-        const envValue = process.env[envName]
+        const envValue = process.env[envName];
         if (envValue) {
-            args.push('--env', `${envName}=${envValue}`)
+            args.push('--env', `${envName}=${envValue}`);
         }
     }
 
-    // Running the configuration
-
-    const result = await exec.getExecOutput(cliExecutable, args)
+    const result = await exec.getExecOutput(cliExecutable, args);
     const output = result.stdout;
     const json = JSON.parse(output);
     core.info(`Config output: ${JSON.stringify(json, null, 2)}`);
-
-    // Gets the outcome and injects it into the environment
 
     const buildId = json.ID;
     const buildName = json.Name;
@@ -116,13 +87,24 @@ async function setup() {
     core.exportVariable('YONTRACK_PROJECT_ID', projectId);
     core.exportVariable('YONTRACK_PROJECT_NAME', projectName);
 
-    // Injects also these values as action outputs
-
     core.setOutput('buildId', buildId);
     core.setOutput('buildName', buildName);
     core.setOutput('branchId', branchId);
     core.setOutput('branchName', branchName);
     core.setOutput('projectId', projectId);
     core.setOutput('projectName', projectName);
+}
 
+module.exports = { runAction };
+
+if (process.env.NODE_ENV !== 'test') {
+    (async () => {
+        const core = await import('@actions/core');
+        const execDep = await import('@actions/exec');
+        try {
+            await runAction({ core, exec: execDep, client });
+        } catch (error) {
+            core.setFailed(error.message);
+        }
+    })();
 }
