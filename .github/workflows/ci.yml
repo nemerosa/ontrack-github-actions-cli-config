@@ -14,15 +14,10 @@ jobs:
 
     permissions:
       packages: read
-      contents: write
 
     steps:
 
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: true
 
       - uses: actions/setup-node@v6
         with:
@@ -31,7 +26,6 @@ jobs:
           scope: '@nemerosa'
 
       - name: Install dependencies
-        id: npm-ci
         run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,6 +35,35 @@ jobs:
       - run: npm run build
 
       - run: npm test
+
+  self-test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    permissions:
+      packages: read
+
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@nemerosa'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The runner executes dist/index.js, so it must be built from this commit's source
+      - run: npm run build
 
       - name: "Test: configuration"
         if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
@@ -54,6 +77,7 @@ jobs:
 
       - name: "Test: check injected variables"
         if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
+        shell: bash
         run: |
           missing=""
           [ -z "$YONTRACK_BUILD_ID" ] && missing="${missing} YONTRACK_BUILD_ID"
@@ -80,15 +104,62 @@ jobs:
           fi
           echo "All validations passed successfully!"
 
-      - name: "Test: validations and promotions"
+      # Proves the CLI put on the PATH by the action resolves as `yontrack` on every OS (yontrack.exe on Windows)
+      - name: "Test: CLI on the PATH"
         if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
+        shell: bash
+        run: yontrack version
+
+      # Both legs register the same build: validating it once is enough
+      - name: "Test: validations and promotions"
+        if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != '' && runner.os == 'Linux'
+        shell: bash
         run: |
           yontrack validate --validation BUILD --status PASSED
           yontrack validate --validation TEST --status PASSED
 
+  release:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [build, self-test]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+      contents: write
+
+    steps:
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@nemerosa'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: npm run build
+
+      # Installs the CLI and sets the YONTRACK_* variables for the "Tagging the Yontrack build" step
+      - name: Yontrack configuration
+        if: github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != ''
+        uses: ./
+        env:
+          YONTRACK_URL: ${{ vars.ONTRACK_URL }}
+          YONTRACK_TOKEN: ${{ secrets.ONTRACK_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Semantic release
         id: release
-        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           npx semantic-release
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -98,7 +169,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update floating major/minor tags
-        if: ${{ github.ref == 'refs/heads/main' && steps.release.outputs.version != '' }}
+        if: ${{ steps.release.outputs.version != '' }}
         run: |
           VERSION="${{ steps.release.outputs.version }}"
           [[ "$VERSION" =~ ^v([0-9]+)\.([0-9]+)\.[0-9]+$ ]] || exit 0
@@ -109,5 +180,5 @@ jobs:
           git push origin -f "$MAJOR" "$MINOR"
 
       - name: Tagging the Yontrack build
-        if: ${{ github.ref == 'refs/heads/main' && steps.release.outputs.version != '' && vars.ONTRACK_URL != '' }}
+        if: ${{ steps.release.outputs.version != '' && github.repository_owner == 'nemerosa' && vars.ONTRACK_URL != '' }}
         run: yontrack build set-property release "${{ steps.release.outputs.version }}"

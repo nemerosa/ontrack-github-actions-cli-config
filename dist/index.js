@@ -23398,6 +23398,13 @@ var require_ontrack_github_actions_module_install = __commonJS({
       };
       return mappings[arch2] || arch2;
     }
+    var cliRepository = { owner: "yontrack", repo: "yontrack-cli" };
+    function isWindows2() {
+      return os6.platform().startsWith("win");
+    }
+    function exeSuffix() {
+      return isWindows2() ? ".exe" : "";
+    }
     function mapOS(os7) {
       const mappings = {
         win32: "windows"
@@ -23416,7 +23423,7 @@ var require_ontrack_github_actions_module_install = __commonJS({
       const nodeStream = Readable.fromWeb(response.body);
       return new Promise((resolve2, reject) => {
         nodeStream.pipe(fileStream);
-        fileStream.on("finish", () => resolve2(filePath));
+        fileStream.on("close", () => resolve2(filePath));
         fileStream.on("error", reject);
         nodeStream.on("error", reject);
       });
@@ -23424,14 +23431,13 @@ var require_ontrack_github_actions_module_install = __commonJS({
     async function downloadAndSetup({ downloadUrl, cliName, logging }) {
       const cliPath = await downloadFile(downloadUrl);
       if (logging) console.log(`Downloaded at ${cliPath}`);
-      if (!os6.platform().startsWith("win")) {
+      if (!isWindows2()) {
         await fs3.chmodSync(cliPath, "766");
       }
       const dir = path6.dirname(cliPath);
       if (logging) console.log(`Directory is ${dir}`);
-      const exeSuffix = os6.platform().startsWith("win") ? ".exe" : "";
-      const cliExecutable = `${cliName}${exeSuffix}`;
-      await fs3.promises.rename(cliPath, [dir, cliExecutable].join(path6.sep));
+      const cliExecutable = `${cliName}${exeSuffix()}`;
+      await fs3.promises.rename(cliPath, path6.join(dir, cliExecutable));
       return {
         dir,
         cliExecutable
@@ -23445,10 +23451,7 @@ var require_ontrack_github_actions_module_install = __commonJS({
         }
         const github = await Promise.resolve().then(() => (init_github(), github_exports));
         const octokit = github.getOctokit(githubToken);
-        const releases = await octokit.rest.repos.listReleases({
-          owner: "nemerosa",
-          repo: "ontrack-cli"
-        });
+        const releases = await octokit.rest.repos.listReleases(cliRepository);
         const lastRelease = releases.data.find((release) => acceptDraft || !release.draft);
         if (!lastRelease) {
           if (acceptDraft) {
@@ -23466,7 +23469,7 @@ var require_ontrack_github_actions_module_install = __commonJS({
       if (logging) console.log(`For OS arch: ${osArch}`);
       const majorVersion = parseInt(version.split(".").at(0), 10);
       const cliName = majorVersion >= 5 ? "yontrack" : "ontrack-cli";
-      const downloadUrl = `https://github.com/nemerosa/ontrack-cli/releases/download/${version}/${cliName}-${osPlatform}-${osArch}`;
+      const downloadUrl = `https://github.com/${cliRepository.owner}/${cliRepository.repo}/releases/download/${version}/${cliName}-${osPlatform}-${osArch}${exeSuffix()}`;
       if (logging) console.log(`Downloading CLI from ${downloadUrl}`);
       const { dir, cliExecutable } = await downloadAndSetup({ downloadUrl, cliName, logging });
       return { version, dir, cliExecutable };
@@ -23486,7 +23489,7 @@ var require_ontrack_github_actions_module_install = __commonJS({
       if (!yontrackToken) {
         throw "Yontrack token must be provided in order to configure the CLI.";
       }
-      const exe = `${dir}/${cliExecutable}`;
+      const exe = path6.join(dir, cliExecutable);
       let command = `${exe} config create ${yontrackLocalConfig} ${yontrackUrl} --token ${yontrackToken}`;
       if (connRetryCount) {
         command += ` --conn-retry-count ${connRetryCount}`;
