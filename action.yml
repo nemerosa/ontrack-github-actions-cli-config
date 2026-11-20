@@ -1,7 +1,7 @@
 name: Yontrack CLI Config
 description: >
   GitHub action to install and configure the [Yontrack
-  CLI](https://github.com/nemerosa/ontrack-cli), followed
+  CLI](https://github.com/yontrack/yontrack-cli), followed
 
   by the configuration of the build, branch & project in Yontrack, using
 

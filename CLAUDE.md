@@ -15,7 +15,7 @@ npm run all     # lint + build + test
 
 ## Architecture
 
-This is a GitHub Action that installs and configures the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli) and then runs `yontrack ci config` to register the current CI build in a Yontrack instance. Outputs/exports build/branch/project identifiers as both action outputs and env vars (`YONTRACK_BUILD_ID`, `YONTRACK_BUILD_NAME`, etc.) for downstream actions.
+This is a GitHub Action that installs and configures the [Yontrack CLI](https://github.com/yontrack/yontrack-cli) and then runs `yontrack ci config` to register the current CI build in a Yontrack instance. Outputs/exports build/branch/project identifiers as both action outputs and env vars (`YONTRACK_BUILD_ID`, `YONTRACK_BUILD_NAME`, etc.) for downstream actions.
 
 **Execution flow** (`index.js`):
 1. Reads `url`/`token` inputs (falling back to `YONTRACK_URL`/`YONTRACK_TOKEN` env vars)
@@ -42,11 +42,13 @@ This is a GitHub Action that installs and configures the [Yontrack CLI](https://
 
 Releases are automated via `semantic-release` (`.releaserc`). Commit messages follow Angular convention. Every conventional-commit type triggers at least a patch release; `feat` is minor; `refactor` and any commit with a `BREAKING CHANGE:` footer is major.
 
-The CI workflow on `main`:
-1. Runs `npm run lint && npm run build && npm test`.
-2. Self-tests the action (`uses: ./`) against a real Yontrack instance.
-3. Runs `npx semantic-release` — produces `vX.Y.Z` GitHub release; `@semantic-release/git` commits the regenerated `dist/`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `action.yml`.
-4. Force-updates floating `vX` and `vX.Y` tags to point at the new release SHA.
+The CI workflow (`.github/workflows/ci.yml`) has three jobs:
+1. `build` — runs `npm run lint && npm run build && npm test`.
+2. `self-test` — matrix on `ubuntu-latest` and `windows-latest`: builds `dist/` and self-tests the action (`uses: ./`) against a real Yontrack instance, then runs `yontrack` from the PATH. Validations are sent from the Linux leg only.
+3. `release` — on `main` only, `needs` both jobs above. Runs the action again to get the CLI and `YONTRACK_*` variables, then:
+   - runs `npx semantic-release` — produces `vX.Y.Z` GitHub release; `@semantic-release/git` commits the regenerated `dist/`, `CHANGELOG.md`, `package.json`, `package-lock.json`, and `action.yml`;
+   - force-updates floating `vX` and `vX.Y` tags to point at the new release SHA;
+   - sets the `release` property on the Yontrack build.
 
 ## NPM registry
 

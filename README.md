@@ -1,6 +1,6 @@
 # Ontrack GitHub actions: CLI Config
 
-GitHub action to install and configure the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli), followed
+GitHub action to install and configure the [Yontrack CLI](https://github.com/yontrack/yontrack-cli), followed
 by the configuration of the build, branch & project in Yontrack, using
 a local configuration file.
 
@@ -22,7 +22,7 @@ Example:
 ```
 This step performs the following actions:
 
-1. Installs the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli) using the latest available version (using the `github-token` to get access to the list of releases)
+1. Installs the [Yontrack CLI](https://github.com/yontrack/yontrack-cli) using the latest available version (using the `github-token` to get access to the list of releases)
 2. Sets the `yontrack` CLI on the path for the subsequent steps
 3. Configures the CLI based on the `YONTRACK_URL` and `YONTRACK_TOKEN` environment variables
 4. Sends the default `.yontrack/ci.yml` to Yontrack, associated with some environment
@@ -131,7 +131,7 @@ env-vars: |
 
 #### `version`
 
-Version of the [Yontrack CLI](https://github.com/nemerosa/ontrack-cli/releases) to install. If not specified, defaults to the latest available.
+Version of the [Yontrack CLI](https://github.com/yontrack/yontrack-cli/releases) to install. If not specified, defaults to the latest available.
 
 #### `github-token`
 
@@ -151,11 +151,11 @@ Optional name of the configuration to create for the CLI. Defaults to `default`.
 
 #### `conn-retry-count`
 
-Optional value to override max connection retry attempts. If not set, default ontrack-cli behavior applies. 
+Optional value to override max connection retry attempts. If not set, default `yontrack` CLI behavior applies. 
 
 #### `conn-retry-wait`
 
-Optional value to override max wait time between connection retry attempts. If not set, default ontrack-cli behavior applies. 
+Optional value to override max wait time between connection retry attempts. If not set, default `yontrack` CLI behavior applies. 
 
 ## Outputs
 
