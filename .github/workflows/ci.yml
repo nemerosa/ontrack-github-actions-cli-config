@@ -91,8 +91,8 @@ jobs:
             exit 1
           fi
           echo "All required variables are set"
-          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
-          EXPECTED_BRANCH_NAME="${CURRENT_BRANCH//\//-}"
+          # Branch name on push, `<pr>/merge` on pull requests
+          EXPECTED_BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
           if [ "$YONTRACK_BRANCH_NAME" != "$EXPECTED_BRANCH_NAME" ]; then
             echo "Error: YONTRACK_BRANCH_NAME='$YONTRACK_BRANCH_NAME' does not match expected '$EXPECTED_BRANCH_NAME'"
             exit 1
