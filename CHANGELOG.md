@@ -1,3 +1,11 @@
+## [2.0.1](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v2.0.0...v2.0.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* **ci:** derive the expected Yontrack branch name from GITHUB_REF_NAME ([9623a9e](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/9623a9ec261263573ab4d57e3855e22b106e1d5f))
+* install the yontrack CLI on Windows runners ([66ffc3c](https://github.com/nemerosa/ontrack-github-actions-cli-config/commit/66ffc3c8a6f6f75346976ba9286dac75576ad1ae)), closes [#2](https://github.com/nemerosa/ontrack-github-actions-cli-config/issues/2)
+
 # [2.0.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.3.0...v2.0.0) (2026-05-06)
 
 # [1.3.0](https://github.com/nemerosa/ontrack-github-actions-cli-config/compare/v1.2.0...v1.3.0) (2026-03-10)
